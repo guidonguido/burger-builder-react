@@ -1,0 +1,23 @@
+.SideDrawer {
+    width: 280px;
+    max-width: 70%;
+    height:100%;
+    left:0;
+    top:0;
+    z-index: 200;
+}
+
+
+
+.Logo{
+    height:20%;
+    max-height: 280px;
+    padding: 20px;
+    position: fixed;
+}
+
+.Grids{
+    height: 100%;
+    max-width: 100%;
+    width: 280px;
+}

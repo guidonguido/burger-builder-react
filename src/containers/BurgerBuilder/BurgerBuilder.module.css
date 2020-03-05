@@ -1,0 +1,10 @@
+.BuildSections {
+    width: 100%;
+    background-color: wheat ;
+    display: flex;
+    flex-flow: row;
+    align-items: center;
+    box-shadow: 0px 2px 1px antiquewhite;
+    margin: auto;
+    padding: 10px 0px;
+}

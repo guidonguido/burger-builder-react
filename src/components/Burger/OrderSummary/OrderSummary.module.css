@@ -1,0 +1,52 @@
+.Product {
+  color: #767676;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 0 0 rgba(0, 0, 0, 0.1);
+}
+
+.ux_card {
+  border: 1px solid #E8E8E8;
+  background: #FCFCFC;
+  padding:20px;
+  position: relative;
+
+}
+
+.ux_card :hover{
+    cursor: pointer;
+    border-color: #008a32;
+}
+
+
+
+.price {
+    color: #333;
+    font-weight: bold;
+  }
+.tier {
+    padding-bottom: 1em;
+  }
+.renews {
+    padding-top: 1em;
+  }
+.title{
+  padding-top: 2px;
+  float: left;
+  clear: left;
+}
+
+.tier,  .attr, .renews {
+  padding-top: 40px;
+  float: left;
+  clear: left;
+}
+
+.price, .term {
+    float: right;
+    clear: right;
+  }
+
+
+.span { 
+  display: block;
+}
