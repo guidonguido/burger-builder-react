@@ -5,8 +5,12 @@ import BuildControls from '../../components/Burger/BuildControls/BuildControls';
 import PriceTable from '../../components/Burger/BuildControls/PriceTable/PriceTable';
 import Modal from '../../components/UI/Modal/Modal';
 import OrderSummary from '../../components/Burger/OrderSummary/OrderSummary';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import withErrorHandler from '../../hoc/withErrorHandler/withErrorHandler';
 
 import classes from './BurgerBuilder.module.css'
+
+import axios from 'axios';
 
 
 const INGREDIENT_TYPES = {
@@ -19,15 +23,21 @@ const INGREDIENT_TYPES = {
 class BurgerBuilder extends Component {
 
     state = {
-        ingredients: {
-            salad: 0,
-            meat: 0,
-            cheese: 0,
-            bacon: 0
-        },
-
+        ingredients:null,
         totalPrice: 4.00,
-        purchasing: false
+        purchasing: false,
+        confirmed:false,
+        error:null
+    }
+
+    componentDidMount () {
+        axios.get('https://guidos-burger-react.firebaseio.com/ingredients.json').then(response =>{
+             this.setState({ingredients:response.data});
+        }, error =>{
+            this.setState({error:error});
+        }
+        
+        )
     }
 
     addIngredientHandler = (type) => {
@@ -62,38 +72,92 @@ class BurgerBuilder extends Component {
     }
 
     purchaseContinueHandler = () =>{
-        alert('Andiamo Avanti!');
+        const order = {
+            ingredients: this.state.ingredients,
+            price: this.state.totalPrice,
+            customer: {
+                name: 'Guidongui',
+                address:{
+                   
+                    street: 'strada1',
+                    zipCode: '87040',
+                    country: 'Italia'
+             
+                },
+                email: 'gng4ever@hotmail.it'
+            },
+            deliveryMethod: 'Veloce'
+            
+        }
+        this.setState({confirmed:true});
+
+        axios.post('/orders.json', order).then(response => {
+            alert('Ordine Pubblicato');
+            this.setState({purchasing:false, confirmed:false})}).catch(
+                error => {alert('Si è verificato un errore, Ordine non pubblicato');
+                          this.setState({confirmed:false})}
+                
+            );
     }
 
     render() {
-        const disabledInfo = { ...this.state.ingredients };
-        for (let key in disabledInfo) {
-        disabledInfo[key] = disabledInfo[key] <= 0;
+        
+
+        let burger = this.state.error? <p style={{padding: '50px'}}>Errore nel caricamento degli ingredienti</p> : <CircularProgress/>;
+        let modalContent;
+
+        if(this.state.ingredients)
+        {   const disabledInfo = { ...this.state.ingredients };
+            
+            for (let key in disabledInfo) {
+            disabledInfo[key] = disabledInfo[key] <= 0;
+            }
+
+            burger =
+            (<Auxiliary>
+                    <Burger ingredients={this.state.ingredients} />
+                        <div className={classes.BuildSections}>
+                            <BuildControls addIngredient={this.addIngredientHandler}
+                                removeIngredient={this.removeIngredientHandler}
+                                disabled={disabledInfo}
+                                price={this.state.totalPrice} />
+
+                            <PriceTable price={this.state.totalPrice}
+                                ingredients={this.state.ingredients}
+                                ordered={this.purchaseHandler} />
+
+
+                        </div>
+                </Auxiliary>
+            ); 
+            
+            
+            
+
+            if(this.state.purchasing){
+                if(this.state.confirmed)
+                    modalContent= <CircularProgress style={{marginLeft:"200px"}}/>
+                else
+                    modalContent=
+                        <OrderSummary price={this.state.totalPrice}
+                                ingredients={this.state.ingredients}
+                                danger={this.purchaseCancelHandler}
+                                success={this.purchaseContinueHandler}>
+                        </OrderSummary>
+            }
         }
+            
+
         return (
             <Auxiliary>
                 <Modal show={this.state.purchasing} modalClosed={this.purchaseCancelHandler}>
-                    <OrderSummary price={this.state.totalPrice}
-                        ingredients={this.state.ingredients}
-                        danger={this.purchaseCancelHandler}
-                        success={this.purchaseContinueHandler}>
-                    </OrderSummary></Modal>
-                <Burger ingredients={this.state.ingredients} />
-                <div className={classes.BuildSections}>
-                    <BuildControls addIngredient={this.addIngredientHandler}
-                        removeIngredient={this.removeIngredientHandler}
-                        disabled={disabledInfo}
-                        price={this.state.totalPrice} />
-
-                    <PriceTable price={this.state.totalPrice}
-                        ingredients={this.state.ingredients}
-                        ordered={this.purchaseHandler} />
-
-
-                </div>
+                    {modalContent} 
+                </Modal>
+                
+                {burger}
             </Auxiliary>
         )
     }
 }
 
-export default BurgerBuilder;
+export default withErrorHandler(BurgerBuilder,axios);
